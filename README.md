@@ -1,8 +1,10 @@
-# Seekable Stream Cipher For Rust
+# Seekable Stream Cipher And Encryption/Decryption For Rust
 
 This crate derives a deterministic 2^64 byte key stream from a secret key, and allows applications to randomly read that stream from any offset.
 
 The key stream can also be used to encrypt or decrypt arbitrary ranges of a large message.
+
+## [API documentation](https://docs.rs/seekable-stream-cipher)
 
 ## Usage Example
 

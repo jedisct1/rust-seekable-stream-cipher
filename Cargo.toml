@@ -1,9 +1,9 @@
 [package]
 name = "seekable-stream-cipher"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Frank Denis <github@pureftpd.org>"]
 edition = "2021"
-description = "Seekable stream cipher and encryption/decryption API"
+description = "Seekable stream cipher and encryption/decryption"
 readme = "README.md"
 license = "MIT"
 keywords = ["crypto", "ascon", "keccak", "stream", "cipher"]
