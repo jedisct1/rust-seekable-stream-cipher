@@ -84,4 +84,21 @@ fn main() {
         });
         println!("ChaCha20/8 : {}", res.throughput(out.len() as _));
     }
+
+    {
+        use aes::cipher::{KeyIvInit, StreamCipher, StreamCipherSeek};
+        type Aes128Ctr64LE = ctr::Ctr64LE<aes::Aes128>;
+
+        let key = [0x42; 16];
+        let iv = [0x24; 16];
+        let mut st = Aes128Ctr64LE::new(&key.into(), &iv.into());
+
+        let mut out = [0u8; 10000];
+        let res = bench.run(options, || {
+            st.seek(0);
+            st.apply_keystream(&mut out);
+            out
+        });
+        println!("AES-128    : {}", res.throughput(out.len() as _));
+    }
 }

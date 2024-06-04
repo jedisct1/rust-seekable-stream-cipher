@@ -98,6 +98,7 @@ WebAssembly (Wasmtime, Zen4 CPU)
 | ChaCha20/20 | 69.33 M/s  |
 | ChaCha20/12 | 107.81 M/s |
 | ChaCha20/8  | 147.85 M/s |
+| AES-128     | 77.55 M/s  |
 
 On WebAssembly, Keccak and Ascon have similar performance, with a slight advantage for Keccak. But Ascon may be more efficient for very small outputs, and requires less memory.
 
