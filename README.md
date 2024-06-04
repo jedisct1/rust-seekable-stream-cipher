@@ -73,7 +73,7 @@ The main selection criteria for the primitive were:
 - ability to encrypt from arbitrary offsets, with a byte granularity, and without having access to previously encrypted content.
 - security and efficiency in a WebAssembly environment.
 
-The first constraint disqualifies any block cipher or larger than 8 bits.
+The first constraint disqualifies any block cipher larger than 8 bits.
 
 On WebAssembly, AES-based constructions are either very slow or unprotected against side channel attacks.
 
