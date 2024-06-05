@@ -81,7 +81,7 @@ On WebAssembly, AES-based constructions are either very slow or unprotected agai
 
 That leaves us with uncommon/deprecated stream ciphers, ChaCha20 variants, or stream ciphers built on top of standard public permutations.
 
-Due to limitations in Rust and WebAssembly, ChaCha20's performance is not great compared to native, optimized implementations, especially when using Wasmtime on an x86_64 platform (for some reason, resi;ts are more consistent on aarch64).
+Due to limitations in Rust and WebAssembly, ChaCha20's performance is not great compared to native, optimized implementations, especially when using Wasmtime on an x86_64 platform (for some reason, results are more consistent on aarch64).
 
 Keccak and Ascon are a better fit for WebAssembly. They only use bitwise boolean operations on 64-bit words, require minimal temporary registers and can be efficiently scheduled by most compilers. Furthermore, they don't use look-up tables, so they are inherently more secure against side channels than e.g. AES.
 
