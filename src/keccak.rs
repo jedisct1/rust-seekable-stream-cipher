@@ -74,11 +74,11 @@ impl StreamCipher {
             context = &context[context_part_len..];
             state.permute();
 
-            while context.len() > 168 {
-                let context_part_len = 168;
+            while context.len() > 160 {
+                let context_part_len = 160;
                 let context_part = &context[..context_part_len];
-                for i in 0..25 - 4 {
-                    state.st[4 + i] ^=
+                for i in 0..25 - 5 {
+                    state.st[5 + i] ^=
                         u64::from_le_bytes(context_part[i * 8..][0..8].try_into().unwrap());
                 }
                 context = &context[context_part_len..];
@@ -86,9 +86,9 @@ impl StreamCipher {
             }
 
             let context_len = context.len();
-            let mut buf = [0u8; 168];
+            let mut buf = [0u8; 160];
             buf[..context_len].copy_from_slice(context);
-            for i in 0..25 - 4 {
+            for i in 0..25 - 5 {
                 state.st[4 + i] ^= u64::from_le_bytes(buf[i * 8..][0..8].try_into().unwrap());
             }
             state.permute();
@@ -107,7 +107,7 @@ impl StreamCipher {
     fn store_rate(mut self, out: &mut [u8], block_offset: u64) {
         self.st[4] ^= block_offset;
         self.permute();
-        for i in 0..20 {
+        for i in 0..25 - 5 {
             out[i * 8..][..8].copy_from_slice(&self.st[5 + i].to_le_bytes());
         }
     }
@@ -117,7 +117,7 @@ impl StreamCipher {
     fn apply_rate(mut self, out: &mut [u8], block_offset: u64) {
         self.st[4] ^= block_offset;
         self.permute();
-        for i in 0..20 {
+        for i in 0..25 - 5 {
             let x = u64::from_le_bytes(out[i * 8..][..8].try_into().unwrap());
             out[i * 8..][..8].copy_from_slice(&(self.st[5 + i] ^ x).to_le_bytes());
         }
