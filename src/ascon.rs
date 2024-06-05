@@ -250,4 +250,12 @@ mod tests {
         st.fill(&mut out2, 11).unwrap();
         assert_eq!(out[1..], out2[0..out2.len() - 1]);
     }
+
+    #[test]
+    fn test_large_context() {
+        let mut key = [0u8; StreamCipher::KEY_LENGTH];
+        getrandom::getrandom(&mut key).unwrap();
+        let context = [0u8; 10000];
+        let _ = StreamCipher::new(&key, &context);
+    }
 }
