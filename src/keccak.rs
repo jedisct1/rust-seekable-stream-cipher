@@ -89,7 +89,7 @@ impl StreamCipher {
             let mut buf = [0u8; 160];
             buf[..context_len].copy_from_slice(context);
             for i in 0..25 - 5 {
-                state.st[4 + i] ^= u64::from_le_bytes(buf[i * 8..][0..8].try_into().unwrap());
+                state.st[5 + i] ^= u64::from_le_bytes(buf[i * 8..][0..8].try_into().unwrap());
             }
             state.permute();
         }
