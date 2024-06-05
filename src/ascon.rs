@@ -57,10 +57,8 @@ impl StreamCipher {
             while context.len() > 16 {
                 let context_part_len = 16;
                 let context_part = &context[..context_part_len];
-                let mut buf = [0u8; 16];
-                buf[..context_part.len()].copy_from_slice(context_part);
-                state.st[3] ^= u64::from_le_bytes(buf[0..8].try_into().unwrap());
-                state.st[4] ^= u64::from_le_bytes(buf[8..16].try_into().unwrap());
+                state.st[3] ^= u64::from_le_bytes(context_part[0..8].try_into().unwrap());
+                state.st[4] ^= u64::from_le_bytes(context_part[8..16].try_into().unwrap());
                 context = &context[context_part_len..];
                 state.permute();
             }
