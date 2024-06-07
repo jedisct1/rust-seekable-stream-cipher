@@ -66,21 +66,23 @@ impl StreamCipher {
     /// Squeeze a 16-byte block, and store it in the given buffer.
     #[inline(always)]
     fn store_rate(mut self, out: &mut [u8], block_offset: u64) {
+        let mask: [u64; 2] = self.st[0..2].try_into().unwrap();
         self.st[4] ^= block_offset;
         self.permute();
-        out[..8].copy_from_slice(&self.st[0].to_le_bytes());
-        out[8..].copy_from_slice(&self.st[1].to_le_bytes());
+        out[..8].copy_from_slice(&(self.st[3] ^ mask[0]).to_le_bytes());
+        out[8..].copy_from_slice(&(self.st[4] ^ mask[1]).to_le_bytes());
     }
 
     /// Squeeze a 16-byte block, and add it to the given buffer.
     #[inline(always)]
     fn apply_rate(mut self, out: &mut [u8], block_offset: u64) {
+        let mask: [u64; 2] = self.st[0..2].try_into().unwrap();
         self.st[4] ^= block_offset;
         self.permute();
         let out0 = u64::from_le_bytes(out[..8].try_into().unwrap());
         let out1 = u64::from_le_bytes(out[8..][..8].try_into().unwrap());
-        out[..8].copy_from_slice(&(self.st[0] ^ out0).to_le_bytes());
-        out[8..].copy_from_slice(&(self.st[1] ^ out1).to_le_bytes());
+        out[..8].copy_from_slice(&(self.st[3] ^ out0 ^ mask[0]).to_le_bytes());
+        out[8..].copy_from_slice(&(self.st[4] ^ out1 ^ mask[1]).to_le_bytes());
     }
 
     /// Squeeze and return a 16-byte block.
