@@ -24,58 +24,37 @@ impl StreamCipher {
     /// The context is optional can be of any length. It is used to improve multi-user security.
     pub fn new(key: &[u8; Self::KEY_LENGTH], context: impl AsRef<[u8]>) -> Self {
         let context = context.as_ref();
-        let st = [
-            0xb57e273b814cd416,
-            0x2b51042562ae2420,
-            0x66a3a7768ddf2218,
-            0x5aad0a7a8153650c,
-            0x4f3e0e32539493b6,
-        ];
+        let st = [0x80808c0000000000, 0, 0, 0, 0];
+
         let mut state = StreamCipher { st };
-        state.st[0] ^= u64::from_le_bytes(key[0..8].try_into().unwrap());
-        state.st[1] ^= u64::from_le_bytes(key[8..16].try_into().unwrap());
-        state.st[2] ^= u64::from_le_bytes(key[16..24].try_into().unwrap());
-        state.st[3] ^= u64::from_le_bytes(key[24..32].try_into().unwrap());
+        state.st[1] ^= u64::from_le_bytes(key[0..8].try_into().unwrap());
+        state.st[2] ^= u64::from_le_bytes(key[8..16].try_into().unwrap());
+        state.st[3] ^= u64::from_le_bytes(key[16..24].try_into().unwrap());
+        state.st[4] ^= u64::from_le_bytes(key[24..32].try_into().unwrap());
+        state.permute();
 
         let mut context = context;
-        if context.len() < 8 {
-            let context_len = context.len();
-            let mut buf = [0u8; 8];
-            buf[..context_len].copy_from_slice(context);
-            buf[context_len] = 0x80;
-            state.st[4] ^= u64::from_le_bytes(buf);
-            state.permute();
-        } else {
-            let context_part_len = 8;
+
+        while context.len() > 32 {
+            let context_part_len = 32;
             let context_part = &context[..context_part_len];
-            let mut buf = [0u8; 8];
-            buf[..context_part.len()].copy_from_slice(context_part);
-            state.st[4] ^= u64::from_le_bytes(buf);
+            state.st[0] ^= u64::from_le_bytes(context_part[0..8].try_into().unwrap());
+            state.st[1] ^= u64::from_le_bytes(context_part[8..16].try_into().unwrap());
+            state.st[2] ^= u64::from_le_bytes(context_part[16..24].try_into().unwrap());
+            state.st[3] ^= u64::from_le_bytes(context_part[24..32].try_into().unwrap());
             context = &context[context_part_len..];
-            state.permute();
-
-            while context.len() > 16 {
-                let context_part_len = 16;
-                let context_part = &context[..context_part_len];
-                state.st[3] ^= u64::from_le_bytes(context_part[0..8].try_into().unwrap());
-                state.st[4] ^= u64::from_le_bytes(context_part[8..16].try_into().unwrap());
-                context = &context[context_part_len..];
-                state.permute();
-            }
-
-            let context_len = context.len();
-            let mut buf = [0u8; 16];
-            buf[..context_len].copy_from_slice(context);
-            buf[context_len] = 0x80;
-            state.st[3] ^= u64::from_le_bytes(buf[0..8].try_into().unwrap());
-            state.st[4] ^= u64::from_le_bytes(buf[8..16].try_into().unwrap());
             state.permute();
         }
 
-        state.st[0] ^= u64::from_le_bytes(key[0..8].try_into().unwrap());
-        state.st[1] ^= u64::from_le_bytes(key[8..16].try_into().unwrap());
-        state.st[2] ^= u64::from_le_bytes(key[16..24].try_into().unwrap());
-        state.st[3] ^= u64::from_le_bytes(key[24..32].try_into().unwrap());
+        let context_len = context.len();
+        let mut buf = [0u8; 32];
+        buf[..context_len].copy_from_slice(context);
+        state.st[0] ^= u64::from_le_bytes(buf[0..8].try_into().unwrap());
+        state.st[1] ^= u64::from_le_bytes(buf[8..16].try_into().unwrap());
+        state.st[2] ^= u64::from_le_bytes(buf[16..24].try_into().unwrap());
+        state.st[3] ^= u64::from_le_bytes(buf[24..32].try_into().unwrap());
+        state.st[4] ^= 0x01;
+        state.permute();
 
         state
     }
@@ -84,7 +63,7 @@ impl StreamCipher {
     #[inline(always)]
     fn store_rate(mut self, out: &mut [u8], block_offset: u64) {
         self.st[4] ^= block_offset;
-        self.permute_r();
+        self.permute();
         out[..8].copy_from_slice(&self.st[0].to_le_bytes());
         out[8..].copy_from_slice(&self.st[1].to_le_bytes());
     }
@@ -93,7 +72,7 @@ impl StreamCipher {
     #[inline(always)]
     fn apply_rate(mut self, out: &mut [u8], block_offset: u64) {
         self.st[4] ^= block_offset;
-        self.permute_r();
+        self.permute();
         let out0 = u64::from_le_bytes(out[..8].try_into().unwrap());
         let out1 = u64::from_le_bytes(out[8..][..8].try_into().unwrap());
         out[..8].copy_from_slice(&(self.st[0] ^ out0).to_le_bytes());
@@ -218,12 +197,6 @@ impl StreamCipher {
     fn permute(&mut self) {
         for &rk in &Self::RKS {
             self.round(rk);
-        }
-    }
-
-    fn permute_r(&mut self) {
-        for &rk in &Self::RKS[0..8] {
-            self.round(rk)
         }
     }
 }

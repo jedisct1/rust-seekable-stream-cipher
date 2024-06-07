@@ -87,7 +87,7 @@ Keccak and Ascon are a better fit for WebAssembly. They only use bitwise boolean
 
 Using Keccak, a stream cipher with at least 128-bit security can be built using Keccak-f[1600] with 12 rounds and a 320-bit capacity, leaving 160 bytes for the rate. 256-bit security can be achieved by reducing the rate to 128 bytes.
 
-The Ascon permutation is smaller and 16 bytes is the maximum reasonable rate.
+The Ascon permutation is smaller. We use the Ascon-PRF construction, which absorbs the context as 32 byte blocks, but 16 bytes is the maximum output rate.
 
 ### Benchmarks
 
