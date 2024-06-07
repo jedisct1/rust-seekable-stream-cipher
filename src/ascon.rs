@@ -24,7 +24,7 @@ impl StreamCipher {
     /// The context is optional can be of any length. It is used to improve multi-user security.
     pub fn new(key: &[u8; Self::KEY_LENGTH], context: impl AsRef<[u8]>) -> Self {
         let context = context.as_ref();
-        let st = [0x0100808c00000000, 0, 0, 0, 0];
+        let st = [0x010080cc00000000, 0, 0, 0, 0];
 
         let mut state = StreamCipher { st };
         state.st[1] ^= u64::from_le_bytes(key[0..8].try_into().unwrap());

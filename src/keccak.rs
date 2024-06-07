@@ -21,7 +21,7 @@ impl StreamCipher {
         let context = context.as_ref();
 
         let mut st = [0u64; 25];
-        st[0] = 0x010005008c000000;
+        st[0] = 0x01000500cc000000;
 
         let mut state = StreamCipher { st };
         state.st[1] ^= u64::from_le_bytes(key[0..8].try_into().unwrap());
