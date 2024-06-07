@@ -68,8 +68,12 @@ impl StreamCipher {
     /// Squeeze a 160-byte block, and store it in the given buffer.
     #[inline(always)]
     fn store_rate(mut self, out: &mut [u8], block_offset: u64) {
+        let mask: [u64; 4] = self.st[0..4].try_into().unwrap();
         self.st[4] ^= block_offset;
         self.permute();
+        for (x, mask) in self.st[5..][0..4].iter_mut().zip(mask) {
+            *x ^= mask;
+        }
         for i in 0..25 - 5 {
             out[i * 8..][..8].copy_from_slice(&self.st[5 + i].to_le_bytes());
         }
@@ -78,8 +82,12 @@ impl StreamCipher {
     /// Squeeze a 160-byte block, and add it to the given buffer.
     #[inline(always)]
     fn apply_rate(mut self, out: &mut [u8], block_offset: u64) {
+        let mask: [u64; 4] = self.st[0..4].try_into().unwrap();
         self.st[4] ^= block_offset;
         self.permute();
+        for (x, mask) in self.st[5..][0..4].iter_mut().zip(mask) {
+            *x ^= mask;
+        }
         for i in 0..25 - 5 {
             let x = u64::from_le_bytes(out[i * 8..][..8].try_into().unwrap());
             out[i * 8..][..8].copy_from_slice(&(self.st[5 + i] ^ x).to_le_bytes());
