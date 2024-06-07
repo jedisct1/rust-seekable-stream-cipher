@@ -21,7 +21,7 @@ impl StreamCipher {
         let context = context.as_ref();
         // PI decimals
         let st = [
-            0x80808c0000000000,
+            0x20a08c0000000000,
             0,
             0,
             0,
