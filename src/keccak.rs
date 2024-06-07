@@ -21,78 +21,65 @@ impl StreamCipher {
         let context = context.as_ref();
         // PI decimals
         let st = [
-            0x243f6a8885a308d3,
-            0x13198a2e03707344,
-            0xa4093822299f31d0,
-            0x082efa98ec4e6c89,
-            0x452821e638d01377,
-            0xbe5466cf34e90c6c,
-            0xc0ac29b7c97c50dd,
-            0x3f84d5b5b5470917,
-            0x9216d5d98979fb1b,
-            0xd1310ba698dfb5ac,
-            0x2ffd72dbd01adfb7,
-            0xb8e1afed6a267e96,
-            0xba7c9045f12c7f99,
-            0x24a19947b3916cf7,
-            0x0801f2e2858efc16,
-            0x636920d871574e69,
-            0xa458fea3f4933d7e,
-            0x0d95748f728eb658,
-            0x718bcd5882154aee,
-            0x7b54a41dc25a59b5,
-            0x9c30d5392af26013,
-            0xc5d1b023286085f0,
-            0xca417918b8db38ef,
-            0x8e79dcb0603a180e,
-            0x6c9e0e8bb01e8a3e,
+            0x80808c0000000000,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
         ];
         let mut state = StreamCipher { st };
-        state.st[0] ^= u64::from_le_bytes(key[0..8].try_into().unwrap());
-        state.st[1] ^= u64::from_le_bytes(key[8..16].try_into().unwrap());
-        state.st[2] ^= u64::from_le_bytes(key[16..24].try_into().unwrap());
-        state.st[3] ^= u64::from_le_bytes(key[24..32].try_into().unwrap());
+        state.st[1] ^= u64::from_le_bytes(key[0..8].try_into().unwrap());
+        state.st[2] ^= u64::from_le_bytes(key[8..16].try_into().unwrap());
+        state.st[3] ^= u64::from_le_bytes(key[16..24].try_into().unwrap());
+        state.st[4] ^= u64::from_le_bytes(key[24..32].try_into().unwrap());
 
         let mut context = context;
-        if context.len() < 168 {
-            let context_len = context.len();
-            let mut buf = [0u8; 168];
-            buf[..context_len].copy_from_slice(context);
-            buf[context_len] = 0x80;
-            for i in 0..25 - 4 {
-                state.st[4 + i] ^= u64::from_le_bytes(buf[i * 8..][0..8].try_into().unwrap());
-            }
-            state.permute();
-        } else {
-            let context_part_len = 168;
-            let context_part = &context[..context_part_len];
-            let mut buf = [0u8; 168];
-            buf[..context_part.len()].copy_from_slice(context_part);
-            for i in 0..25 - 4 {
-                state.st[4 + i] ^= u64::from_le_bytes(buf[i * 8..][0..8].try_into().unwrap());
+        if context.len() > 160 {
+            let context_part_len = 160;
+            for i in 0..25 - 5 {
+                state.st[5 + i] ^= u64::from_le_bytes(context[i * 8..][0..8].try_into().unwrap());
             }
             context = &context[context_part_len..];
             state.permute();
 
             while context.len() > 160 {
                 let context_part_len = 160;
-                let context_part = &context[..context_part_len];
                 for i in 0..25 - 5 {
                     state.st[5 + i] ^=
-                        u64::from_le_bytes(context_part[i * 8..][0..8].try_into().unwrap());
+                        u64::from_le_bytes(context[i * 8..][0..8].try_into().unwrap());
                 }
                 context = &context[context_part_len..];
                 state.permute();
             }
-
-            let context_len = context.len();
-            let mut buf = [0u8; 160];
-            buf[..context_len].copy_from_slice(context);
-            for i in 0..25 - 5 {
-                state.st[5 + i] ^= u64::from_le_bytes(buf[i * 8..][0..8].try_into().unwrap());
-            }
-            state.permute();
         }
+        let context_len = context.len();
+        let mut buf = [0u8; 160];
+        buf[..context_len].copy_from_slice(context);
+        for i in 0..25 - 5 {
+            state.st[5 + i] ^= u64::from_le_bytes(buf[i * 8..][0..8].try_into().unwrap());
+        }
+        state.st[0] ^= 0x01;
+        state.permute();
 
         state.st[0] ^= u64::from_le_bytes(key[0..8].try_into().unwrap());
         state.st[1] ^= u64::from_le_bytes(key[8..16].try_into().unwrap());
@@ -239,6 +226,6 @@ mod tests {
         let mut key = [0u8; StreamCipher::KEY_LENGTH];
         getrandom::getrandom(&mut key).unwrap();
         let context = [0u8; 10000];
-        let _ = StreamCipher::new(&key, &context);
+        let _ = StreamCipher::new(&key, context);
     }
 }

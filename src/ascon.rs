@@ -37,11 +37,10 @@ impl StreamCipher {
 
         while context.len() > 32 {
             let context_part_len = 32;
-            let context_part = &context[..context_part_len];
-            state.st[0] ^= u64::from_le_bytes(context_part[0..8].try_into().unwrap());
-            state.st[1] ^= u64::from_le_bytes(context_part[8..16].try_into().unwrap());
-            state.st[2] ^= u64::from_le_bytes(context_part[16..24].try_into().unwrap());
-            state.st[3] ^= u64::from_le_bytes(context_part[24..32].try_into().unwrap());
+            state.st[0] ^= u64::from_le_bytes(context[0..8].try_into().unwrap());
+            state.st[1] ^= u64::from_le_bytes(context[8..16].try_into().unwrap());
+            state.st[2] ^= u64::from_le_bytes(context[16..24].try_into().unwrap());
+            state.st[3] ^= u64::from_le_bytes(context[24..32].try_into().unwrap());
             context = &context[context_part_len..];
             state.permute();
         }
@@ -55,6 +54,11 @@ impl StreamCipher {
         state.st[3] ^= u64::from_le_bytes(buf[24..32].try_into().unwrap());
         state.st[4] ^= 0x01;
         state.permute();
+
+        state.st[0] ^= u64::from_le_bytes(key[0..8].try_into().unwrap());
+        state.st[1] ^= u64::from_le_bytes(key[8..16].try_into().unwrap());
+        state.st[2] ^= u64::from_le_bytes(key[16..24].try_into().unwrap());
+        state.st[3] ^= u64::from_le_bytes(key[24..32].try_into().unwrap());
 
         state
     }
@@ -229,6 +233,6 @@ mod tests {
         let mut key = [0u8; StreamCipher::KEY_LENGTH];
         getrandom::getrandom(&mut key).unwrap();
         let context = [0u8; 10000];
-        let _ = StreamCipher::new(&key, &context);
+        let _ = StreamCipher::new(&key, context);
     }
 }
