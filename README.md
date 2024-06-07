@@ -107,3 +107,5 @@ On WebAssembly, Keccak and Ascon are the fastest options, with a slight advantag
 Even with round reduction, ChaCha20 is slow. It may be due to inefficient compiler optimizations, but even in Zig, Ascon and Keccak-based constructions were shown to have good performance on WebAssembly compared to other constructions.
 
 This crate implements both an Ascon-based stream cipher and a Keccak-based stream cipher. Both options are decent choices for WebAssemby, and are built on conventional NIST-blessed building blocks.
+
+Performance can be improved by using SIMD instructions, but they are not stable nor universally supported by WebAssembly runtimes yet.
