@@ -3,4 +3,5 @@
 #![forbid(unsafe_code)]
 
 pub mod ascon;
+pub mod chacha;
 pub mod keccak;

@@ -2,4 +2,4 @@
 .zig-cache
 /target
 Cargo.lock
-src/chacha.rs
+src/chacha_rustcrypto.rs
