@@ -65,39 +65,39 @@ impl StreamCipher {
         state
     }
 
-    /// Squeeze a 160-byte block, and store it in the given buffer.
+    /// Squeeze a 200-byte block, and store it in the given buffer.
     #[inline(always)]
     fn store_rate(mut self, out: &mut [u8], block_offset: u64) {
-        let mask: [u64; 4] = self.st[0..4].try_into().unwrap();
+        let mask = self.st;
         self.st[4] ^= block_offset;
         self.permute();
-        for (x, mask) in self.st[5..][0..4].iter_mut().zip(mask) {
+        for (x, mask) in self.st.iter_mut().zip(mask) {
             *x ^= mask;
         }
-        for i in 0..25 - 5 {
-            out[i * 8..][..8].copy_from_slice(&self.st[5 + i].to_le_bytes());
+        for i in 0..25 {
+            out[i * 8..][..8].copy_from_slice(&self.st[i].to_le_bytes());
         }
     }
 
-    /// Squeeze a 160-byte block, and add it to the given buffer.
+    /// Squeeze a 200-byte block, and add it to the given buffer.
     #[inline(always)]
     fn apply_rate(mut self, out: &mut [u8], block_offset: u64) {
-        let mask: [u64; 4] = self.st[0..4].try_into().unwrap();
+        let mask = self.st;
         self.st[4] ^= block_offset;
         self.permute();
-        for (x, mask) in self.st[5..][0..4].iter_mut().zip(mask) {
+        for (x, mask) in self.st.iter_mut().zip(mask) {
             *x ^= mask;
         }
-        for i in 0..25 - 5 {
+        for i in 0..25 {
             let x = u64::from_le_bytes(out[i * 8..][..8].try_into().unwrap());
-            out[i * 8..][..8].copy_from_slice(&(self.st[5 + i] ^ x).to_le_bytes());
+            out[i * 8..][..8].copy_from_slice(&(self.st[i] ^ x).to_le_bytes());
         }
     }
 
-    /// Squeeze and return a 160-byte block.
+    /// Squeeze and return a 200-byte block.
     #[inline(always)]
-    fn squeeze_rate(self, block_offset: u64) -> [u8; 160] {
-        let mut out = [0u8; 160];
+    fn squeeze_rate(self, block_offset: u64) -> [u8; 200] {
+        let mut out = [0u8; 200];
         self.store_rate(&mut out, block_offset);
         out
     }
@@ -111,18 +111,18 @@ impl StreamCipher {
         if start_offset.checked_add(out.len() as u64).is_none() {
             return Err("offset would overflow");
         }
-        let mut block_offset = start_offset / 160;
-        let offset_in_first_block = (start_offset % 160) as usize;
-        let bytes_to_copy = cmp::min(160 - offset_in_first_block, out.len());
+        let mut block_offset = start_offset / 200;
+        let offset_in_first_block = (start_offset % 200) as usize;
+        let bytes_to_copy = cmp::min(200 - offset_in_first_block, out.len());
         if bytes_to_copy > 0 {
             let rate = self.squeeze_rate(block_offset);
             out[..bytes_to_copy].copy_from_slice(&rate[offset_in_first_block..][..bytes_to_copy]);
             out = &mut out[bytes_to_copy..];
         }
-        while out.len() >= 160 {
+        while out.len() >= 200 {
             block_offset += 1;
-            self.store_rate(&mut out[..160], block_offset);
-            out = &mut out[160..];
+            self.store_rate(&mut out[..200], block_offset);
+            out = &mut out[200..];
         }
         if !out.is_empty() {
             block_offset += 1;
@@ -152,9 +152,9 @@ impl StreamCipher {
         if start_offset.checked_add(out.len() as u64).is_none() {
             return Err("offset would overflow");
         }
-        let mut block_offset = start_offset / 160;
-        let offset_in_first_block = (start_offset % 160) as usize;
-        let bytes_to_copy = cmp::min(160 - offset_in_first_block, out.len());
+        let mut block_offset = start_offset / 200;
+        let offset_in_first_block = (start_offset % 200) as usize;
+        let bytes_to_copy = cmp::min(200 - offset_in_first_block, out.len());
         if bytes_to_copy > 0 {
             let rate = self.squeeze_rate(block_offset);
             for i in 0..bytes_to_copy {
@@ -162,10 +162,10 @@ impl StreamCipher {
             }
             out = &mut out[bytes_to_copy..];
         }
-        while out.len() >= 160 {
+        while out.len() >= 200 {
             block_offset += 1;
-            self.apply_rate(&mut out[..160], block_offset);
-            out = &mut out[160..];
+            self.apply_rate(&mut out[..200], block_offset);
+            out = &mut out[200..];
         }
         if !out.is_empty() {
             block_offset += 1;

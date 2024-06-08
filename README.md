@@ -85,9 +85,9 @@ Due to limitations in Rust and WebAssembly, ChaCha20's performance is not great 
 
 Keccak and Ascon are a better fit for WebAssembly. They only use bitwise boolean operations on 64-bit words, require minimal temporary registers and can be efficiently scheduled by most compilers. Furthermore, they don't use look-up tables, so they are inherently more secure against side channels than e.g. AES.
 
-Using Keccak, a stream cipher with at least 128-bit security can be built using Keccak-f[1600] with 12 rounds and a 320-bit capacity, leaving 160 bytes for the rate. 256-bit security can be achieved by reducing the rate to 128 bytes.
+Using Keccak, a stream cipher with at least 128-bit security can be built using Keccak-f[1600] with 12 rounds and a 320-bit capacity, leaving 160 bytes for the rate to absorb the context.
 
-The Ascon permutation is smaller. We use the parameters of the Ascon-PRF construction, which absorbs the context as 32 byte blocks, but 16 bytes is the maximum output rate.
+The Ascon permutation is smaller. We use the parameters of the Ascon-PRF construction, which absorbs the context as 32 byte blocks.
 
 ### Benchmarks
 
@@ -95,7 +95,7 @@ WebAssembly (Wasmtime, Zen4 CPU)
 
 | Primitive   | Throughput |
 | ----------- | ---------- |
-| ChaCha20/12 | 487.15 M/s |
+| ChaCha20/12 | 494.33 M/s |
 | Keccak      | 398.54 M/s |
 | Ascon       | 232.58 M/s |
 | AES-128     | 77.55 M/s  |
