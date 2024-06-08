@@ -178,7 +178,7 @@ impl StreamCipher {
     }
 
     fn permute(&mut self) {
-        let mask = self.st;
+        let mask: [u32; 12] = self.st[4..].try_into().unwrap();
         let x = &mut self.st;
         for _ in 0..12 / 2 {
             {
@@ -270,8 +270,12 @@ impl StreamCipher {
                 x[R[1]] = (x[R[1]] ^ x[R[2]]).rotate_left(7);
             }
         }
-        for i in 0..16 {
-            x[i] = x[i].wrapping_add(mask[i]);
+        x[0] = x[0].wrapping_add(Self::CONSTANTS[0]);
+        x[1] = x[1].wrapping_add(Self::CONSTANTS[1]);
+        x[2] = x[2].wrapping_add(Self::CONSTANTS[2]);
+        x[3] = x[3].wrapping_add(Self::CONSTANTS[3]);
+        for i in 4..16 {
+            x[i] = x[i].wrapping_add(mask[i - 4]);
         }
     }
 }
