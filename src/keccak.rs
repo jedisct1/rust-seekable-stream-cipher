@@ -68,8 +68,8 @@ impl StreamCipher {
     /// Squeeze a 200-byte block, and store it in the given buffer.
     #[inline(always)]
     fn store_rate(mut self, out: &mut [u8], block_offset: u64) {
-        let mask = self.st;
         self.st[4] ^= block_offset;
+        let mask = self.st;
         self.permute();
         for (x, mask) in self.st.iter_mut().zip(mask) {
             *x ^= mask;
