@@ -93,12 +93,12 @@ The Ascon permutation is smaller. We use the parameters of the Ascon-PRF constru
 
 WebAssembly (Wasmtime, Zen4 CPU)
 
-| Primitive   | Throughput |
-| ----------- | ---------- |
-| ChaCha20/12 | 494.33 M/s |
-| Keccak      | 452.72 M/s |
-| Ascon       | 534.18 M/s |
-| AES-128     | 77.55 M/s  |
+| Primitive | Throughput |
+| --------- | ---------- |
+| ChaCha    | 494.33 M/s |
+| Keccak    | 452.72 M/s |
+| Ascon     | 471.21 M/s |
+| AES-128   | 77.55 M/s  |
 
 On WebAssembly, ChaCha20/12, Keccak and Ascon are in the same ballpark, while bitsliced AES is about 7 times slower.
 
