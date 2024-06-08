@@ -95,17 +95,13 @@ WebAssembly (Wasmtime, Zen4 CPU)
 
 | Primitive   | Throughput |
 | ----------- | ---------- |
+| ChaCha20/12 | 487.15 M/s |
 | Keccak      | 398.54 M/s |
 | Ascon       | 232.58 M/s |
-| ChaCha20/20 | 69.33 M/s  |
-| ChaCha20/12 | 107.81 M/s |
-| ChaCha20/8  | 147.85 M/s |
 | AES-128     | 77.55 M/s  |
 
-On WebAssembly, Keccak and Ascon are the fastest options, with a slight advantage for Keccak. But Ascon may be more efficient for very small outputs, and requires less memory.
+On WebAssembly, ChaCha20/12 and Keccak are the fastest options. But Ascon may be more efficient for very small outputs, and requires less memory.
 
-Even with round reduction, ChaCha20 is slow. It may be due to inefficient compiler optimizations, but even in Zig, Ascon and Keccak-based constructions were shown to have good performance on WebAssembly compared to other constructions.
-
-This crate implements both an Ascon-based stream cipher and a Keccak-based stream cipher. Both options are decent choices for WebAssemby, and are built on conventional NIST-blessed building blocks.
+This crate implements an Ascon-based stream cipher, a Keccak-based stream cipher and the ChaCha20/12 stream cipher. All these options are decent choices for WebAssemby, and are made of standard building blocks.
 
 Performance can be improved by using SIMD instructions, but they are not stable nor universally supported by WebAssembly runtimes yet.
