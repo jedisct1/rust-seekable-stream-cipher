@@ -3,3 +3,4 @@
 /target
 Cargo.lock
 src/chacha_rustcrypto.rs
+.swival
