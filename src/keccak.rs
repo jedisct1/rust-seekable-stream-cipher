@@ -113,19 +113,22 @@ impl StreamCipher {
         }
         let mut block_offset = start_offset / 200;
         let offset_in_first_block = (start_offset % 200) as usize;
-        let bytes_to_copy = cmp::min(200 - offset_in_first_block, out.len());
-        if bytes_to_copy > 0 {
-            let rate = self.squeeze_rate(block_offset);
-            out[..bytes_to_copy].copy_from_slice(&rate[offset_in_first_block..][..bytes_to_copy]);
-            out = &mut out[bytes_to_copy..];
+        if offset_in_first_block != 0 {
+            let bytes_to_copy = cmp::min(200 - offset_in_first_block, out.len());
+            if bytes_to_copy > 0 {
+                let rate = self.squeeze_rate(block_offset);
+                out[..bytes_to_copy]
+                    .copy_from_slice(&rate[offset_in_first_block..][..bytes_to_copy]);
+                out = &mut out[bytes_to_copy..];
+            }
+            block_offset += 1;
         }
         while out.len() >= 200 {
-            block_offset += 1;
             self.store_rate(&mut out[..200], block_offset);
+            block_offset += 1;
             out = &mut out[200..];
         }
         if !out.is_empty() {
-            block_offset += 1;
             let rate = self.squeeze_rate(block_offset);
             out.copy_from_slice(&rate[..out.len()]);
         }
@@ -154,21 +157,23 @@ impl StreamCipher {
         }
         let mut block_offset = start_offset / 200;
         let offset_in_first_block = (start_offset % 200) as usize;
-        let bytes_to_copy = cmp::min(200 - offset_in_first_block, out.len());
-        if bytes_to_copy > 0 {
-            let rate = self.squeeze_rate(block_offset);
-            for i in 0..bytes_to_copy {
-                out[i] ^= rate[offset_in_first_block + i];
+        if offset_in_first_block != 0 {
+            let bytes_to_copy = cmp::min(200 - offset_in_first_block, out.len());
+            if bytes_to_copy > 0 {
+                let rate = self.squeeze_rate(block_offset);
+                for i in 0..bytes_to_copy {
+                    out[i] ^= rate[offset_in_first_block + i];
+                }
+                out = &mut out[bytes_to_copy..];
             }
-            out = &mut out[bytes_to_copy..];
+            block_offset += 1;
         }
         while out.len() >= 200 {
-            block_offset += 1;
             self.apply_rate(&mut out[..200], block_offset);
+            block_offset += 1;
             out = &mut out[200..];
         }
         if !out.is_empty() {
-            block_offset += 1;
             let rate = self.squeeze_rate(block_offset);
             for i in 0..out.len() {
                 out[i] ^= rate[i];
@@ -203,6 +208,14 @@ mod tests {
 
         st.fill(&mut out2, 11).unwrap();
         assert_eq!(out[1..], out2[0..out2.len() - 1]);
+
+        out.fill(0);
+        st.apply_keystream(&mut out, 0).unwrap();
+        st.fill(&mut out2, 0).unwrap();
+        assert_eq!(out, out2);
+
+        st.fill(&mut out, 200).unwrap();
+        assert_eq!(out[..out2.len() - 200], out2[200..]);
     }
 
     #[test]
