@@ -17,7 +17,7 @@ impl StreamCipher {
     /// Create a new state with the given key and context.
     ///
     /// The key must be 32 bytes long, and must be randomly generated, for example using
-    /// `rand::thread_rng().gen::<[u8; 32]>()` or `getrandom::getrandom()`.
+    /// `rand::thread_rng().gen::<[u8; 32]>()` or `getrandom::fill()`.
     ///
     /// The context identifier is used to improve multi-user security.
     pub fn new(key: &[u8; Self::KEY_LENGTH], id: &[u8; 8]) -> Self {
@@ -287,7 +287,7 @@ mod tests {
     #[test]
     fn test_ascon() {
         let mut key = [0u8; StreamCipher::KEY_LENGTH];
-        getrandom::getrandom(&mut key).unwrap();
+        getrandom::fill(&mut key).unwrap();
 
         let st = StreamCipher::new(&key, b"testtest");
 

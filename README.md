@@ -15,7 +15,7 @@ use seekable_stream_cipher::keccak::StreamCipher;
 
 /// Create a new 32-byte secret key using a secure random number generator
 let mut key = [0u8; StreamCipher::KEY_LENGTH];
-getrandom::getrandom(&mut key).unwrap();
+getrandom::fill(&mut key).unwrap();
 
 /// Initialize the stream cipher using the key, and a context.
 /// A key used with different contexts produces different key streams.
@@ -40,7 +40,7 @@ use seekable_stream_cipher::keccak::StreamCipher;
 
 /// Create a new 32-byte secret key using a secure random number generator
 let mut key = [0u8; StreamCipher::KEY_LENGTH];
-getrandom::getrandom(&mut key).unwrap();
+getrandom::fill(&mut key).unwrap();
 
 /// Initialize the stream cipher using the key, and a context.
 /// A key used with different contexts produces different key streams.
@@ -48,7 +48,7 @@ let st = StreamCipher::new(&key, b"encryption test");
 
 /// Create a large message filled with random junk
 let mut msg = [0u8; 10000];
-getrandom::getrandom(&mut msg).unwrap();
+getrandom::fill(&mut msg).unwrap();
 
 /// Create a copy of the message
 let mut msg2 = msg.clone();
